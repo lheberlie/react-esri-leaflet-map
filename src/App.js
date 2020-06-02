@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import ReactDOM, { render } from "react-dom";
-import { geoJSON, Map, Projection, point } from "leaflet";
+import { circleMarker, geoJSON, Map, Projection, point } from "leaflet";
 import { basemapLayer, featureLayer, get, Util } from "esri-leaflet";
 import "../node_modules/leaflet/dist/leaflet.css";
 import "./App.css";
@@ -20,7 +20,6 @@ class App extends React.Component {
     };
   }
   componentDidMount() {
-
     // Imagery or Topographic
     basemapLayer("Topographic").addTo(this.map);
 
@@ -59,7 +58,25 @@ class App extends React.Component {
           featureCollection.features.push(feature);
         }
 
-        const geojson = geoJSON(featureCollection).addTo(this.map);
+        var geojsonMarkerOptions = {
+          radius: 8,
+          fillColor: "#ff7800",
+          color: "#000",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8,
+        };
+        const geojson = geoJSON(featureCollection, {
+          pointToLayer: (feature, latlng) => {
+            return circleMarker(latlng, geojsonMarkerOptions);
+          },
+          onEachFeature: (feature, layer) => {
+            // does this feature have a property named popupContent?
+            if (feature.properties && feature.properties.Name) {
+              layer.bindPopup(feature.properties.Name);
+            }
+          },
+        }).addTo(this.map);
         this.map.fitBounds(geojson.getBounds());
       }
     );
